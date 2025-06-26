@@ -15,6 +15,8 @@ bun install
 
 And make sure that you've created a `.env` file in package root and updated the `GOOGLE_GENERATIVE_AI_API_KEY` value with your own key. You can get your own from here: https://aistudio.google.com/apikey
 
+Replace the `public/resume.pdf` with your own, making sure that the file name and type is exactly the same - otherwise, it will not work!
+
 For the purpose of this template, we will use `Google`'s LLMs and `AI SDK` https://ai-sdk.dev/ for simplicity but feel free to change it to whatever you want. 
 
 #### Running 
