@@ -13,7 +13,12 @@ const formSchema = z.object({
   messages: z.string(),
 });
 
-async function parseAndValidateMessages(req: NextRequest): Promise<any[]> {
+interface Message {
+  role: string;
+  content: string;
+}
+
+async function parseAndValidateMessages(req: NextRequest): Promise<Message[]> {
   const formData = await req.formData();
   const messagesRaw = formData.get("messages");
 
@@ -24,7 +29,7 @@ async function parseAndValidateMessages(req: NextRequest): Promise<any[]> {
   if (!parsed.success) {
     throw { status: 400, message: "Invalid input format." };
   }
-  let messages: any[];
+  let messages: Message[];
   try {
     messages = JSON.parse(messagesRaw);
   } catch {
@@ -35,11 +40,12 @@ async function parseAndValidateMessages(req: NextRequest): Promise<any[]> {
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
-    let messages: any[];
+    let messages: Message[];
     try {
       messages = await parseAndValidateMessages(req);
-    } catch (err: any) {
-      return NextResponse.json({ error: err.message }, { status: err.status || 400 });
+    } catch (err: unknown) { // eslint-disable-line @typescript-eslint/no-explicit-any
+      const error = err as { message?: string; status?: number };
+      return NextResponse.json({ error: error.message }, { status: error.status || 400 });
     }
 
     const filePath = path.join(process.cwd(), "public", "resume.pdf");
@@ -50,7 +56,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: "resume.pdf not found in public directory." }, { status: 404 });
     }
 
-    const llmMessages = messages.map((m: any, idx: number) => {
+    const llmMessages = messages.map((m: Message, idx: number) => {
       if (idx === messages.length - 1 && m.role === "user") {
         return {
           role: m.role,
@@ -66,7 +72,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           { type: "text" as const, text: m.content },
         ],
       };
-    });
+    }) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
     const model = google("gemini-2.0-flash-lite");
     const result = await generateText({
@@ -79,7 +85,7 @@ You must take on the persona of resume candidate provided to you and must speak 
     });
 
     return NextResponse.json({ response: result.text });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
