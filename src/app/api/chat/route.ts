@@ -1,4 +1,6 @@
 "use server"
+// if you're making any sort of call that requires API key don't make it as a client component, always call it as server component.
+// ctrl + c, to close server host
 
 import { NextRequest, NextResponse } from "next/server";
 import { google } from "./google";

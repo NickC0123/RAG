@@ -50,7 +50,7 @@ export default function ChatPage() {
         ...prev,
         { role: "assistant", content: data.response },
       ]);
-    } catch (err: any) {
+    } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       setHasError(err.message || "Failed to get response.");
     } finally {
       setIsLoading(false);
